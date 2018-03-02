@@ -1,6 +1,7 @@
 package io.franzbecker.gradle.lombok.task
 import io.franzbecker.gradle.lombok.LombokPlugin
 import io.franzbecker.gradle.lombok.LombokPluginExtension
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.JavaExec
 
@@ -10,25 +11,29 @@ import org.gradle.api.tasks.JavaExec
  */
 class DelombokTask extends JavaExec {
 
-    String mainClass = "lombok.delombok.Delombok"
-    String compileConfigurationName = JavaPlugin.COMPILE_CONFIGURATION_NAME
+    String[] configurationNames = [
+        JavaPlugin.API_CONFIGURATION_NAME,
+        JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+        LombokPlugin.LOMBOK_CONFIGURATION_NAME
+    ]
 
-    public DelombokTask() {
+    DelombokTask() {
         super()
         args "delombok"
     }
 
     @Override
     void exec() {
-        // Retrieve extension and configuration
         def extension = project.extensions.findByType(LombokPluginExtension)
-        def lombok = project.configurations.getByName(LombokPlugin.LOMBOK_CONFIGURATION_NAME)
-        def compile = project.configurations.getByName(compileConfigurationName)
 
         // Configure JavaExec
         setMain(extension.main)
-        classpath(lombok, compile)
+        classpath(getConfigurations())
         super.exec()
+    }
+
+    private ConfigurationContainer[] getConfigurations() {
+        return configurationNames.collect { project.configurations.getByName(it) }
     }
 
 }

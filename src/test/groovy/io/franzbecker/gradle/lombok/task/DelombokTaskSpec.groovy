@@ -11,14 +11,13 @@ class DelombokTaskSpec extends AbstractJavaExecTaskSpec {
         given: "a newly created DelombokTask"
         def task = project.task(type: DelombokTask, "delombok")
         def execAction = mockJavaExecAction(task)
-        def compile = project.configurations.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME)
 
         when: "task executes"
         task.exec()
 
         then: "Delombok main is called"
         1 * execAction.setMain('lombok.launch.Main')
-        1 * execAction.classpath(configuration, compile)
+        1 * execAction.classpath(_)
         1 * execAction.execute()
     }
 

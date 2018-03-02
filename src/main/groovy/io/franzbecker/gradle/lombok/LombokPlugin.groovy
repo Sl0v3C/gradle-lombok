@@ -12,19 +12,13 @@ import org.gradle.plugins.ide.idea.IdeaPlugin
 /**
  * Plugin for project Lombok support.
  *
- * The main responsibility is to add Lombok as a "provided" dependency which is
- * only required during compilation and should not leave any trace on the resulting artifact.
- *
- * Furthermore, this plugin provides support for easy installation of Lombok into the IDE.
- * For this purpose, it verifies the JAR it adds as dependency (using its SHA-256 hash) and
- * the invokes it in order to call the default Lombok UI.
- *
+ * @see <a href="https://github.com/franzbecker/gradle-lombok">GitHub project</a>
  * @see <a href="https://projectlombok.org">https://projectlombok.org</a>
  */
 class LombokPlugin implements Plugin<Project> {
 
     static final String NAME = "io.franzbecker.gradle-lombok"
-    static final String LOMBOK_CONFIGURATION_NAME = "lombok"
+    static final String LOMBOK_CONFIGURATION_NAME = JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME
 
     @Override
     void apply(Project project) {
@@ -32,34 +26,22 @@ class LombokPlugin implements Plugin<Project> {
         project.extensions.create(LombokPluginExtension.NAME, LombokPluginExtension)
 
         project.plugins.withType(JavaPlugin) {
-            def configuration = createLombokConfiguration(project)
+            addLombokDependency(project)
             configureTasks(project)
-            configureIdeaPlugin(project, configuration)
-            configureEclipsePlugin(project, configuration)
         }
     }
 
     /**
-     * Create a separate {@link Configuration} for the Lombok dependency.
+     * Adds the Lombok dependency as compileOnly
      */
-    private Configuration createLombokConfiguration(Project project) {
-        def configuration = project.configurations.create(LOMBOK_CONFIGURATION_NAME)
-                .setVisible(false)
-                .setDescription("Additional compile classpath for Lombok.")
-
+    private void addLombokDependency(Project project) {
         project.afterEvaluate {
             project.dependencies.add(
-                    LOMBOK_CONFIGURATION_NAME,
-                    "org.projectlombok:lombok:${project.lombok.version}",
-                    {
-                        transitive = false
-                    }
+                LOMBOK_CONFIGURATION_NAME,
+                "org.projectlombok:lombok:${project.lombok.version}",
+                { transitive = false }
             )
         }
-
-        def compile = project.configurations.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME)
-        compile.extendsFrom(configuration)
-        return configuration
     }
 
     /**
@@ -77,26 +59,6 @@ class LombokPlugin implements Plugin<Project> {
         project.task(type: InstallLombokTask, InstallLombokTask.NAME).with {
             outputs.upToDateWhen { false }
             dependsOn verifyLombok
-        }
-    }
-
-    /**
-     * If the Idea plugin is present, Lombok is added to its classpath.
-     */
-    private void configureIdeaPlugin(Project project, Configuration lombok) {
-        project.plugins.withType(IdeaPlugin) {
-            project.idea.module {
-                scopes.PROVIDED.plus += [lombok]
-            }
-        }
-    }
-
-    /**
-     * If the Eclipse plugin is present, Lombok is added to its classpath.
-     */
-    private void configureEclipsePlugin(Project project, Configuration lombok) {
-        project.plugins.withType(EclipsePlugin) {
-            project.eclipse.classpath.plusConfigurations += [lombok]
         }
     }
 

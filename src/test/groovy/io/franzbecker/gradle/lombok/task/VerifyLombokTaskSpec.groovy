@@ -37,7 +37,7 @@ class VerifyLombokTaskSpec extends Specification {
 
         then:
         GradleException e = thrown()
-        e.message == "Could not find 'lombok-${version}.jar' in dependencies of configuration 'lombok'."
+        e.message == "Could not find 'lombok-${version}.jar' in dependencies of configuration '${LombokPlugin.LOMBOK_CONFIGURATION_NAME}'."
     }
 
     def "Does not fail if file integrity is fulfilled"() {
