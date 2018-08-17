@@ -8,10 +8,10 @@ class LombokPluginExtension {
     static final String NAME = "lombok"
 
     /** The version of Lombok to use. */
-    String version = "1.16.20"
+    String version = "1.18.2"
 
     /** The SHA-256 hash of the JAR. */
-    String sha256 = "c5178b18caaa1a15e17b99ba5e4023d2de2ebc18b58cde0f5a04ca4b31c10e6d"
+    String sha256 = "f13db210efa2092a58bb7befce58ffa502e5fefc5e1099f45007074008756bc0"
 
     /** The main class to call when invoking {@linkplain InstallLombokTask#NAME}. */
     String main = "lombok.launch.Main"
